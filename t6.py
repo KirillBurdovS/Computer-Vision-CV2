@@ -4,6 +4,7 @@ from transformers import SegformerImageProcessor, SegformerForSemanticSegmentati
 from PIL import Image 
 import matplotlib.pyplot as plt 
 import numpy as np 
+import easyocr
 
 image_path = '/Users/dayeven/Desktop/banner_s.jpg'
 
@@ -13,11 +14,11 @@ except FileNotFoundError:
     print("Not fing picture")
     exit()
 
-
 processor = SegformerImageProcessor.from_pretrained("nvidia/segformer-b0-finetuned-ade-512-512")
 model = SegformerForSemanticSegmentation.from_pretrained("nvidia/segformer-b0-finetuned-ade-512-512")
-
 model.eval()
+
+reader = easyocr.Reader(['ru', 'en'])
 
 inputs = processor(images=img_pil, return_tensors="pt")
 
@@ -66,6 +67,12 @@ if len(contours) > 0:
     
     cv2.imwrite('detected_banner.jpg', cropped_banner)
     print(f"x={x}, y={y}, width={w}, height={h}")
+
+    ocr_results = reader.readtext(cropped_banner, detail=0)
+
+    if len(ocr_results) > 0:
+        for i, text in enumerate(ocr_results):
+            print(f"Строка {i+1}: {text}")
 
     
 
