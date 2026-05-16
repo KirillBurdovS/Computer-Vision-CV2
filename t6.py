@@ -1,3 +1,4 @@
+import cv2 
 import torch 
 from transformers import SegformerImageProcessor, SegformerForSemanticSegmentation
 from PIL import Image 
@@ -47,5 +48,28 @@ plt.show()
 
 unique_classes = np.unique(segmention_mask)
 print(f"ID find class: {unique_classes}\n")
+
+# Binar mask
+binary_mask = (segmention_mask == 43).astype(np.uint8) * 255
+
+contours, _ = cv2.findContours(binary_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+if len(contours) > 0:
+    largest_contour = max(contours, key=cv2.contourArea)
+
+    x, y, w, h = cv2.boundingRect(largest_contour)
+
+    orig_img_np = np.array(img_pil)
+
+    cropped_banner = orig_img_np[y:y+h, x:x+w]
+    cropped_banner_bgr = cv2.cvtColor(cropped_banner, cv2.COLOR_RGB2BGR)
+    
+    cv2.imwrite('detected_banner.jpg', cropped_banner)
+    print(f"x={x}, y={y}, width={w}, height={h}")
+
+    
+
+
+
 
 
