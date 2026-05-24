@@ -55,6 +55,8 @@ binary_mask = (segmention_mask == 43).astype(np.uint8) * 255
 
 contours, _ = cv2.findContours(binary_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+# For one banner
+"""
 if len(contours) > 0:
     largest_contour = max(contours, key=cv2.contourArea)
 
@@ -73,8 +75,31 @@ if len(contours) > 0:
     if len(ocr_results) > 0:
         for i, text in enumerate(ocr_results):
             print(f"Строка {i+1}: {text}")
+"""
+# More banners
+orig_img_np = np.array(img_pil)
+if len(contours) > 0: 
+    print(f"Всего баннеров: {len(contours)}\n")
+    for idx, contours in enumerate(contours):
+        if cv2.contourArea(contours) < 100:
+            continue
 
-    
+        x,y,w,h = cv2.boundingRect(contours)
+        print(f"Баннер: {idx+1}: x={x}, y={y}, width={w}, height={h}")
+
+        cropped_banner = orig_img_np[y:y+h, x:x+w]
+        cv2.imwrite(f'detected_banner_{idx+1}.jpg', cv2.cvtColor(cropped_banner, cv2.COLOR_RGB2BGR)) 
+        ocr_result = reader.readtext(cropped_banner, detail=0)
+
+        if len(ocr_result) > 0:
+            for i, text in enumerate(ocr_result):
+                print(f"Строка: {i+1}: {text}")
+            else:
+                print("invalid text")
+            print()
+else:
+    print("Banner not founded")
+
 
 
 
